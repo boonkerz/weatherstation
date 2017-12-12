@@ -30,7 +30,7 @@
 
 class GxEPD : public Task {
 private:
-	uint8_t _buffer[1250];
+	uint8_t _buffer[GxGDEW075T8_BUFFER_SIZE];
 	//SPI io;
 public:
 	void init();
