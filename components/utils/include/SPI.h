@@ -23,7 +23,9 @@ public:
 		int csPin   = DEFAULT_CS_PIN);
 	void    setHost(spi_host_device_t host);
 	void    transfer(uint8_t *data, size_t dataLen);
+	void    transferCommand(uint8_t *data, size_t dataLen);
 	uint8_t transferByte(uint8_t value);
+	uint8_t transferCommandByte(uint8_t value);
 	/**
 	 * @brief The default MOSI pin.
 	 */

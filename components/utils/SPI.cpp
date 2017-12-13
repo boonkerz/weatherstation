@@ -53,7 +53,7 @@ void SPI::init(int mosiPin, int misoPin, int clkPin, int csPin) {
 	bus_config.miso_io_num     = misoPin; // MISO
 	bus_config.quadwp_io_num   = -1;      // Not used
 	bus_config.quadhd_io_num   = -1;      // Not used
-	bus_config.max_transfer_sz = 0;       // 0 means use default.
+	bus_config.max_transfer_sz = 60000;       // 0 means use default.
 
 	ESP_LOGI(LOG_TAG, "... Initializing bus; host=%d", m_host);
 
@@ -76,14 +76,14 @@ void SPI::init(int mosiPin, int misoPin, int clkPin, int csPin) {
 	dev_config.duty_cycle_pos   = 0;
 	dev_config.cs_ena_posttrans = 0;
 	dev_config.cs_ena_pretrans  = 0;
-	dev_config.clock_speed_hz   = 100000;
+	dev_config.clock_speed_hz   = 4000000;
 	dev_config.spics_io_num     = csPin;
 	dev_config.flags            = 0;
 	dev_config.queue_size       = 1;
 	dev_config.pre_cb           = NULL;
 	dev_config.post_cb          = NULL;
 	ESP_LOGI(LOG_TAG, "... Adding device bus.");
-	//errRc = ::spi_bus_add_device(m_host, &dev_config, &m_handle);
+	errRc = ::spi_bus_add_device(m_host, &dev_config, &m_handle);
 	if (errRc != ESP_OK) {
 		ESP_LOGE(LOG_TAG, "spi_bus_add_device(): rc=%d", errRc);
 		abort();
@@ -122,7 +122,7 @@ void SPI::transfer(uint8_t* data, size_t dataLen) {
 	trans_desc.rxlength  = 0;
 	trans_desc.tx_buffer = data;
 	trans_desc.rx_buffer = data;
-
+	trans_desc.user = (void*)1;
 	//ESP_LOGI(tag, "... Transferring");
 	esp_err_t rc = ::spi_device_transmit(m_handle, &trans_desc);
 	if (rc != ESP_OK) {
@@ -130,6 +130,35 @@ void SPI::transfer(uint8_t* data, size_t dataLen) {
 	}
 } // transmit
 
+/**
+ * @brief Send and receive data through %SPI.  This is a blocking call.
+ *
+ * @param [in] data A data buffer used to send and receive.
+ * @param [in] dataLen The number of bytes to transmit and receive.
+ */
+void SPI::transferCommand(uint8_t* data, size_t dataLen) {
+	assert(data != nullptr);
+	assert(dataLen > 0);
+#ifdef DEBUG
+	for (auto i=0; i<dataLen; i++) {
+		ESP_LOGD(LOG_TAG, "> %2d %.2x", i, data[i]);
+	}
+#endif
+	spi_transaction_t trans_desc;
+	//trans_desc.address   = 0;
+	//trans_desc.command   = 0;
+	trans_desc.flags     = 0;
+	trans_desc.length    = dataLen * 8;
+	trans_desc.rxlength  = 0;
+	trans_desc.tx_buffer = data;
+	trans_desc.rx_buffer = data;
+
+	//ESP_LOGI(tag, "... Transferring");
+	esp_err_t rc = ::spi_device_transmit(m_handle, &trans_desc);
+	if (rc != ESP_OK) {
+		ESP_LOGE(LOG_TAG, "transfer:spi_device_transmit: %d", rc);
+	}
+} // transmit
 
 /**
  * @brief Send and receive a single byte.
@@ -140,5 +169,16 @@ uint8_t SPI::transferByte(uint8_t value) {
 	transfer(&value, 1);
 	return value;
 } // transferByte
+
+/**
+ * @brief Send and receive a single byte.
+ * @param [in] value The byte to send.
+ * @return The byte value received.
+ */
+uint8_t SPI::transferCommandByte(uint8_t value) {
+	transferCommand(&value, 1);
+	return value;
+} // transferByte
+
 
 

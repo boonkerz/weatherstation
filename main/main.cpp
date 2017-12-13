@@ -5,8 +5,12 @@
 #include "GxEPD.h"
 #include "sdkconfig.h"
 #include "I2C.h"
+#include "esp_heap_trace.h"
 
 static char tag[]="cpp_helloworld";
+
+BME280 bme280Sensor;
+GxEPD display;
 
 extern "C" {
 	void app_main(void);
@@ -14,11 +18,7 @@ extern "C" {
 
 void app_main(void)
 {
-
-	BME280 bme280Sensor;
 	bme280Sensor.init();
-
-	GxEPD display;
 	display.init();
 
 	while (1) {

@@ -13,7 +13,7 @@ void BME280::init() {
 	i2cBus.init(0x77, GPIO_NUM_21, GPIO_NUM_22, I2C::DEFAULT_CLK_SPEED, I2C_NUM_0);
 
 	ESP_LOGD(tag, ">> BME280Sensor");
-	start();
+	//start();
 }
 
 void BME280::run(void *data) {
