@@ -70,6 +70,7 @@ private:
 
 protected:
 	void  _drawPixel(int x, int y, uint8_t val) override;
+
 public:
 	void init();
 	void run(void *data);
