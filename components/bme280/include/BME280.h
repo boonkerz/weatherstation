@@ -12,23 +12,52 @@
 #include "sdkconfig.h"
 #include "Task.h"
 #include "I2C.h"
+#include "BME280_defs.h"
 
 #ifndef COMPONENTS_BME280_INCLUDE_BME280_H_
 #define COMPONENTS_BME280_INCLUDE_BME280_H_
-
-#define BME280_ADDRESS 0x77;
-
-#define BME280_CHIP_ID  UINT8_C(0x60)
-
-#define BME280_CHIP_ID_ADDR					UINT8_C(0xD0)
 
 
 class BME280 : public Task {
 private:
 	I2C i2cBus;
+	uint8_t chipId = 0;
+	bme280_calib_data calib_data;
+	bme280_settings settings;
+	int8_t _getRegs(uint8_t reg_addr, uint8_t *reg_data, uint16_t len);
+	int8_t _setRegs(uint8_t *reg_addr, const uint8_t *reg_data, uint8_t len);
+	int8_t _getCalibData();
+	void _interleaveRegAddr(const uint8_t *reg_addr, uint8_t *temp_buff, const uint8_t *reg_data, uint8_t len);
+	void _parseTempPressCalibData(const uint8_t *reg_data);
+	void _parseHumidityCalibData(const uint8_t *reg_data);
+	int8_t _setSensorSettings(uint8_t desired_settings);
+	int8_t _setSensorMode(uint8_t sensor_mode);
+	int8_t _getSensorData(uint8_t sensor_comp, struct bme280_data *comp_data);
+	void _parseSensorData(const uint8_t *reg_data, struct bme280_uncomp_data *uncomp_data);
+	int8_t _setOsrSettings(uint8_t desired_settings);
+	void _fillFilterSettings(uint8_t *reg_data);
+	void _fillStandbySettings(uint8_t *reg_data);
+	void _fillOsrTempSettings(uint8_t *reg_data);
+	void _fillOsrPressSettings(uint8_t *reg_data);
+	int8_t _setOsrPressTempSettings(uint8_t desired_settings);
+	int8_t _setOsrHumiditySettings();
+	double _compensateTemperature(const struct bme280_uncomp_data *uncomp_data);
+	int8_t _setFilterStandbySettings(uint8_t desired_settings);
+	double _compensatePressure(const struct bme280_uncomp_data *uncomp_data);
+	void _parseDeviceSettings(const uint8_t *reg_data);
+	double _compensateHumidity(const struct bme280_uncomp_data *uncomp_data);
+	int8_t _compensateData(uint8_t sensor_comp, const struct bme280_uncomp_data *uncomp_data, struct bme280_data *comp_data);
+	uint8_t _areSettingsChanged(uint8_t sub_settings, uint8_t desired_settings);
 public:
 	void init();
 	void run(void *data);
+	int8_t softReset();
+	void printSensorData(struct bme280_data *comp_data);
+	int8_t streamSensorDataNormalMode();
+	int8_t getSensorMode(uint8_t *sensor_mode);
+	int8_t putDeviceToSleep();
+	int8_t reloadDeviceSettings();
+	int8_t writePowerMode(uint8_t sensor_mode);
 };
 
 #endif /* COMPONENTS_BME280_INCLUDE_BME280_H_ */

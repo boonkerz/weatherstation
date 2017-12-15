@@ -21,12 +21,6 @@
 
 #define EPD_BUSY_LEVEL 0
 
-#define GxEPD_BLACK     0x0000
-#define GxEPD_DARKGREY  0x7BEF      /* 128, 128, 128 */
-#define GxEPD_LIGHTGREY 0xC618      /* 192, 192, 192 */
-#define GxEPD_WHITE     0xFFFF
-#define GxEPD_RED       0xF800      /* 255,   0,   0 */
-
 #define GxGDEW075T8_WIDTH 640
 #define GxGDEW075T8_HEIGHT 384
 
@@ -54,35 +48,21 @@ private:
 	SPI io;
 	uint8_t drawBuff[GxGDEW075T8_BUFFER_SIZE];
 	int _width = GxGDEW075T8_WIDTH;
-	int16_t _current_page;
 	int _height = GxGDEW075T8_HEIGHT;
 	void _send8pixel(uint8_t data);
 	void _waitBusy();
 	void _wakeUp();
 	void _sleep();
 	void _sendCommand(uint8_t value);
-	int _getStringWidth(char* str);
-	int _7seg_width();
-	int _7seg_height();
-	void _getMaxWidthHeight();
-	uint8_t getCharPtr(uint8_t c);
-	void _draw7seg(int16_t x, int16_t y, int8_t num, int16_t w, int16_t l, color_t color);
 
 protected:
-	void  _drawPixel(int x, int y, uint8_t val) override;
 
+	void  _drawPixel(int x, int y, uint8_t val) override;
 public:
 	void init();
 	void run(void *data);
-	void fillScreen(uint16_t color);
 	void update();
-	void drawText(char *st, int x, int y);
-	void fillRect(int16_t x, int16_t y, int16_t w, int16_t h, color_t color);
-	void setFont(uint8_t font, const char *font_file);
-	void drawFastHLine(int16_t x, int16_t y, int16_t w, color_t color);
-	int getFontHeight();
-	void drawFastVLine(int16_t x, int16_t y, int16_t h, color_t color);
-
+	void fillScreen(uint16_t color);
 };
 
 #endif /* COMPONENTS_GxEPD_INCLUDE_GxEPD_H_ */

@@ -97,6 +97,32 @@ typedef struct {
 #define swap(a, b) { int16_t t = a; a = b; b = t; }
 /*******************************************************************/
 
+extern uint8_t tft_SmallFont[];
+extern uint8_t tft_DefaultFont[];
+extern uint8_t tft_Dejavu18[];
+extern uint8_t tft_Dejavu24[];
+extern uint8_t tft_Ubuntu16[];
+extern uint8_t tft_Comic24[];
+extern uint8_t tft_minya24[];
+extern uint8_t tft_tooney32[];
+
+
+static const uint16_t font_bcd[] = {
+  0x200, // 0010 0000 0000  // -
+  0x080, // 0000 1000 0000  // .
+  0x06C, // 0100 0110 1100  // /, degree
+  0x05f, // 0000 0101 1111, // 0
+  0x005, // 0000 0000 0101, // 1
+  0x076, // 0000 0111 0110, // 2
+  0x075, // 0000 0111 0101, // 3
+  0x02d, // 0000 0010 1101, // 4
+  0x079, // 0000 0111 1001, // 5
+  0x07b, // 0000 0111 1011, // 6
+  0x045, // 0000 0100 0101, // 7
+  0x07f, // 0000 0111 1111, // 8
+  0x07d, // 0000 0111 1101  // 9
+  0x900  // 1001 0000 0000  // :
+};
 
 
 /*******************************************************************/
@@ -111,14 +137,13 @@ typedef struct {
 } propFont;
 
 static int EPD_OFFSET = 0;
-static propFont	fontChar;
 
 class DisplayBase : public Task {
 private:
-	int _width = 0;
-	int _height = 0;
 
 protected:
+
+	int8_t _current_page = -1;
 	uint8_t   orientation;		// current screen orientation
 	uint16_t  font_rotate;   	// current font font_rotate angle (0~395)
 	uint8_t   font_transparent;	// if not 0 draw fonts transparent
@@ -133,7 +158,7 @@ protected:
 
 	Font_t cfont;					// Current font structure
 	uint8_t image_debug;
-
+	propFont fontChar;
 	int	EPD_X;					// X position of the next character after EPD_print() function
 	int	EPD_Y;					// Y position of the next character after EPD_print() function
 	uint8_t *gs_disp_buffer = NULL;
@@ -147,7 +172,6 @@ protected:
 
 	void _drawFastVLine(int16_t x, int16_t y, int16_t h, color_t color);
 	void _drawFastHLine(int16_t x, int16_t y, int16_t w, color_t color);
-	virtual void _drawPixel(int x, int y, uint8_t val);
 	void _fillTriangle(uint16_t x0, uint16_t y0, uint16_t x1, uint16_t y1, uint16_t x2, uint16_t y2, color_t color);
 	void _drawTriangle(uint16_t x0, uint16_t y0, uint16_t x1, uint16_t y1, uint16_t x2, uint16_t y2, color_t color);
 	void _drawLine(int16_t x0, int16_t y0, int16_t x1, int16_t y1, color_t color);
@@ -158,7 +182,21 @@ protected:
 	void _fillRect(int16_t x, int16_t y, int16_t w, int16_t h, color_t color);
 	void _drawRect(uint16_t x1,uint16_t y1,uint16_t w,uint16_t h, color_t color);
 	int _printProportionalChar(int x, int y);
+	virtual void  _drawPixel(int x, int y, uint8_t val);
 	int _rotatePropChar(int x, int y, int offset);
+	int _7seg_width();
+	int _7seg_height();
+	int _getStringWidth(char* str);
+	uint8_t _getCharPtr(uint8_t c);
+	void _draw7seg(int16_t x, int16_t y, int8_t num, int16_t w, int16_t l, color_t color);
+	void _getMaxWidthHeight();
+	void _send8pixel(uint8_t data);
 public:
 	void pushColorRep(int x1, int y1, int x2, int y2, color_t color);
+	void fillRect(int16_t x, int16_t y, int16_t w, int16_t h, color_t color);
+	void drawFastHLine(int16_t x, int16_t y, int16_t w, color_t color);
+	void drawFastVLine(int16_t x, int16_t y, int16_t h, color_t color);
+	void drawText(char *st, int x, int y);
+	void setFont(uint8_t font, const char *font_file);
+	int getFontHeight();
 };
