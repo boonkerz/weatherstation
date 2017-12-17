@@ -28,30 +28,20 @@ void GxEPD::init() {
 	gpio_set_direction(GPIO_NUM_5, GPIO_MODE_OUTPUT);
 
 	io.init(GPIO_NUM_23, GPIO_NUM_19, GPIO_NUM_18, GPIO_NUM_5);
-	fillScreen(EPD_WHITE);
-	//start();
-	//fillRect(140,140,20,20, EPD_WHITE);
-	setFont(1, NULL);
-	drawText((char *)"Weather Station", 4, 20);
-	setFont(2, NULL);
-	drawText((char *)"Weather Station", 4, 60);
-	setFont(3, NULL);
-	drawText((char *)"Weather Station", 4, 100);
-	setFont(4, NULL);
-	drawText((char *)"Weather Station", 4, 140);
-	setFont(5, NULL);
-	drawText((char *)"Weather Station", 4, 180);
-	setFont(6, NULL);
-	drawText((char *)"Weather Station", 4, 220);
-	setFont(7, NULL);
-	drawText((char *)"Weather Station", 4, 260);
-	setFont(8, NULL);
-	drawText((char *)"Weather Station", 4, 300);
-	fillRect(200,200,50,50, EPD_BLACK);
 
-	update();
 }
 
+int GxEPD::getWidth() {
+	return _width;
+}
+
+int GxEPD::getHeight() {
+	return _height;
+}
+
+void GxEPD::clean() {
+	fillScreen(EPD_WHITE);
+}
 
 
 void GxEPD::update() {
@@ -79,17 +69,6 @@ void GxEPD::_send8pixel(uint8_t data)
     data <<= 1;
     io.transferByte(t);
   }
-}
-
-void GxEPD::run(void *data) {
-
-	while(true) {
-
-		ESP_LOGD(tag, ">> GxEPD refresh");
-
-		vTaskDelay(6000/portTICK_RATE_MS);
-
-	}
 }
 
 void GxEPD::fillScreen(uint16_t color) {

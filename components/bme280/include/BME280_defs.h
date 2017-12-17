@@ -101,14 +101,8 @@
 #endif
 /********************************************************/
 
-#ifndef BME280_FLOAT_ENABLE
-/* #define BME280_FLOAT_ENABLE */
-#endif
-
-#ifndef BME280_FLOAT_ENABLE
 #ifndef BME280_64BIT_ENABLE
 #define BME280_64BIT_ENABLE
-#endif
 #endif
 
 #ifndef TRUE
@@ -135,6 +129,9 @@
 #define BME280_CTRL_MEAS_ADDR				UINT8_C(0xF4)
 #define BME280_CONFIG_ADDR					UINT8_C(0xF5)
 #define BME280_DATA_ADDR					UINT8_C(0xF7)
+#define BME280_REGISTER_PRESSUREDATA       	UINT8_C(0xF7)
+#define BME280_REGISTER_TEMPDATA            UINT8_C(0xFA)
+#define BME280_REGISTER_HUMIDDATA           UINT8_C(0xFD)
 
 /**\name API success code */
 #define BME280_OK					INT8_C(0)
@@ -233,15 +230,6 @@
 #define BME280_FILTER_COEFF_8                 (0x03)
 #define BME280_FILTER_COEFF_16                (0x04)
 
-/*!
- * @brief Interface selection Enums
- */
-enum bme280_intf {
-	/*! SPI interface */
-	BME280_SPI_INTF,
-	/*! I2C interface */
-	BME280_I2C_INTF
-};
 
 /*!
  * @brief Type definitions
@@ -285,7 +273,6 @@ struct bme280_calib_data {
  * @brief bme280 sensor structure which comprises of temperature, pressure and
  * humidity data
  */
-#ifdef BME280_FLOAT_ENABLE
 struct bme280_data {
 	/*! Compensated pressure */
 	double pressure;
@@ -294,16 +281,6 @@ struct bme280_data {
 	/*! Compensated humidity */
 	double humidity;
 };
-#else
-struct bme280_data {
-	/*! Compensated pressure */
-	uint32_t pressure;
-	/*! Compensated temperature */
-	int32_t temperature;
-	/*! Compensated humidity */
-	uint32_t humidity;
-};
-#endif /* BME280_USE_FLOATING_POINT */
 
 /*!
  * @brief bme280 sensor structure which comprises of uncompensated temperature,

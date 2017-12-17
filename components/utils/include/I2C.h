@@ -48,6 +48,7 @@ public:
 	void init(uint8_t address, gpio_num_t sdaPin = DEFAULT_SDA_PIN, gpio_num_t sclPin = DEFAULT_CLK_PIN, uint32_t clkSpeed = DEFAULT_CLK_SPEED, i2c_port_t portNum = I2C_NUM_0);
 	void read(uint8_t* bytes, size_t length, bool ack=true);
 	void read(uint8_t* byte, bool ack=true);
+	void read(uint8_t reg_addr, uint8_t* bytes, size_t length);
 	void scan();
 	void setAddress(uint8_t address);
 	void setDebug(bool enabled);
@@ -56,6 +57,7 @@ public:
 	void stop();
 	void write(uint8_t byte, bool ack=true);
 	void write(uint8_t* bytes, size_t length, bool ack=true);
+	void write(uint8_t reg_addr, uint8_t *reg_data, uint8_t cnt);
 };
 
 #endif /* MAIN_I2C_H_ */

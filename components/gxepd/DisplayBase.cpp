@@ -50,13 +50,13 @@ void DisplayBase::_fillTriangle(uint16_t x0, uint16_t y0, uint16_t x1, uint16_t 
 
   // Sort coordinates by Y order (y2 >= y1 >= y0)
   if (y0 > y1) {
-    swap(y0, y1); swap(x0, x1);
+	  swapMethod(y0, y1); swapMethod(x0, x1);
   }
   if (y1 > y2) {
-    swap(y2, y1); swap(x2, x1);
+	  swapMethod(y2, y1); swapMethod(x2, x1);
   }
   if (y0 > y1) {
-    swap(y0, y1); swap(x0, x1);
+	  swapMethod(y0, y1); swapMethod(x0, x1);
   }
 
   if(y0 == y2) { // Handle awkward all-on-same-line case as its own thing
@@ -98,7 +98,7 @@ void DisplayBase::_fillTriangle(uint16_t x0, uint16_t y0, uint16_t x1, uint16_t 
     a = x0 + (x1 - x0) * (y - y0) / (y1 - y0);
     b = x0 + (x2 - x0) * (y - y0) / (y2 - y0);
     */
-    if(a > b) swap(a,b);
+    if(a > b) swapMethod(a,b);
     _drawFastHLine(a, y, b-a+1, color);
   }
 
@@ -115,7 +115,7 @@ void DisplayBase::_fillTriangle(uint16_t x0, uint16_t y0, uint16_t x1, uint16_t 
     a = x1 + (x2 - x1) * (y - y1) / (y2 - y1);
     b = x0 + (x2 - x0) * (y - y0) / (y2 - y0);
     */
-    if(a > b) swap(a,b);
+    if(a > b) swapMethod(a,b);
     _drawFastHLine(a, y, b-a+1, color);
   }
 }
@@ -143,12 +143,12 @@ void DisplayBase::_drawLine(int16_t x0, int16_t y0, int16_t x1, int16_t y1, colo
   int steep = 0;
   if (abs(y1 - y0) > abs(x1 - x0)) steep = 1;
   if (steep) {
-    swap(x0, y0);
-    swap(x1, y1);
+	  swapMethod(x0, y0);
+	  swapMethod(x1, y1);
   }
   if (x0 > x1) {
-    swap(x0, x1);
-    swap(y0, y1);
+	  swapMethod(x0, x1);
+	  swapMethod(y0, y1);
   }
 
   int16_t dx = x1 - x0, dy = abs(y1 - y0);;

@@ -30,7 +30,8 @@ I2C::I2C() {
 	m_sclPin  = DEFAULT_CLK_PIN;
 	m_portNum = I2C_NUM_0;
 } // I2C
-
+#define I2C_MASTER_ACK 0
+#define I2C_MASTER_NACK 1
 
 /**
  * @brief Begin a new %I2C transaction.
@@ -132,22 +133,51 @@ void I2C::init(uint8_t address, gpio_num_t sdaPin, gpio_num_t sclPin, uint32_t c
  * @param [in] ack Whether or not we should send an ACK to the slave after reading a byte.
  * @return N/A.
  */
+
 void I2C::read(uint8_t* bytes, size_t length, bool ack) {
 	if (debug) {
 		ESP_LOGD(LOG_TAG, "read(size=%d, ack=%d)", length, ack);
 	}
 	if (m_directionKnown == false) {
 		m_directionKnown = true;
-		esp_err_t errRc = ::i2c_master_write_byte(m_cmd, (m_address << 1) | I2C_MASTER_READ, !ack);
+		esp_err_t errRc = ::i2c_master_write_byte(m_cmd, (m_address << 1) | I2C_MASTER_READ, true);
 		if (errRc != ESP_OK) {
 			ESP_LOGE(LOG_TAG, "i2c_master_write_byte: rc=%d %s", errRc, GeneralUtils::errorToString(errRc));
 		}
 	}
-	esp_err_t errRc = ::i2c_master_read(m_cmd, bytes, length, !ack);
+	if (length > 1) {
+		esp_err_t errRc = ::i2c_master_read(m_cmd, bytes-1, length, 0);
+	}
+	esp_err_t errRc = ::i2c_master_read_byte(m_cmd, bytes+length-1, 1);
 	if (errRc != ESP_OK) {
 		ESP_LOGE(LOG_TAG, "i2c_master_read: rc=%d %s", errRc, GeneralUtils::errorToString(errRc));
 	}
 } // read
+
+
+void I2C::read(uint8_t reg_addr, uint8_t* bytes, size_t length) {
+	esp_err_t espRc;
+
+	i2c_cmd_handle_t cmd = i2c_cmd_link_create();
+
+	i2c_master_start(cmd);
+	i2c_master_write_byte(cmd, (m_address << 1) | I2C_MASTER_WRITE, true);
+	i2c_master_write_byte(cmd, reg_addr, true);
+
+	i2c_master_start(cmd);
+	i2c_master_write_byte(cmd, (m_address << 1) | I2C_MASTER_READ, true);
+
+	if (length > 1) {
+		i2c_master_read(cmd, bytes, length-1, I2C_MASTER_ACK);
+	}
+	i2c_master_read_byte(cmd, bytes+length-1, I2C_MASTER_NACK);
+	i2c_master_stop(cmd);
+
+	espRc = i2c_master_cmd_begin(I2C_NUM_0, cmd, 10/portTICK_PERIOD_MS);
+
+	i2c_cmd_link_delete(cmd);
+
+}
 
 
 /**
@@ -281,12 +311,12 @@ void I2C::write(uint8_t byte, bool ack) {
 	}
 	if (m_directionKnown == false) {
 		m_directionKnown = true;
-		esp_err_t errRc = ::i2c_master_write_byte(m_cmd, (m_address << 1) | I2C_MASTER_WRITE, !ack);
+		esp_err_t errRc = ::i2c_master_write_byte(m_cmd, (m_address << 1) | I2C_MASTER_WRITE, true);
 		if (errRc != ESP_OK) {
 			ESP_LOGE(LOG_TAG, "i2c_master_write_byte: rc=%d %s", errRc, GeneralUtils::errorToString(errRc));
 		}
 	}
-	esp_err_t errRc = ::i2c_master_write_byte(m_cmd, byte, !ack);
+	esp_err_t errRc = ::i2c_master_write_byte(m_cmd, byte, true);
 	if (errRc != ESP_OK) {
 		ESP_LOGE(LOG_TAG, "i2c_master_write_byte: rc=%d %s", errRc, GeneralUtils::errorToString(errRc));
 	}
@@ -307,15 +337,31 @@ void I2C::write(uint8_t *bytes, size_t length, bool ack) {
 	}
 	if (m_directionKnown == false) {
 		m_directionKnown = true;
-		esp_err_t errRc = ::i2c_master_write_byte(m_cmd, (m_address << 1) | I2C_MASTER_WRITE, !ack);
+		esp_err_t errRc = ::i2c_master_write_byte(m_cmd, (m_address << 1) | I2C_MASTER_WRITE, true);
 		if (errRc != ESP_OK) {
 			ESP_LOGE(LOG_TAG, "i2c_master_write_byte: rc=%d %s", errRc, GeneralUtils::errorToString(errRc));
 		}
 	}
-	esp_err_t errRc = ::i2c_master_write(m_cmd, bytes, length, !ack);
+	esp_err_t errRc = ::i2c_master_write(m_cmd, bytes, length, true);
 	if (errRc != ESP_OK) {
 		ESP_LOGE(LOG_TAG, "i2c_master_write: rc=%d %s", errRc, GeneralUtils::errorToString(errRc));
 	}
 } // write
 
+void I2C::write(uint8_t reg_addr, uint8_t *reg_data, uint8_t cnt)
+{
+	esp_err_t espRc;
+	i2c_cmd_handle_t cmd = i2c_cmd_link_create();
 
+	i2c_master_start(cmd);
+	i2c_master_write_byte(cmd, (m_address << 1) | I2C_MASTER_WRITE, true);
+
+	i2c_master_write_byte(cmd, reg_addr, true);
+	i2c_master_write(cmd, reg_data, cnt, true);
+	i2c_master_stop(cmd);
+
+	espRc = i2c_master_cmd_begin(I2C_NUM_0, cmd, 10/portTICK_PERIOD_MS);
+
+	i2c_cmd_link_delete(cmd);
+
+}

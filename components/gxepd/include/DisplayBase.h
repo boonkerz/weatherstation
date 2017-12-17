@@ -6,7 +6,6 @@
 #include <string.h>
 #include <math.h>
 #include "sdkconfig.h"
-#include "Task.h"
 #include "I2C.h"
 #include "SPI.h"
 
@@ -94,7 +93,7 @@ typedef struct {
 #define FONT_7SEG		8
 #define USER_FONT		9  // font will be read from file
 
-#define swap(a, b) { int16_t t = a; a = b; b = t; }
+#define swapMethod(a, b) { int16_t t = a; a = b; b = t; }
 /*******************************************************************/
 
 extern uint8_t tft_SmallFont[];
@@ -138,7 +137,7 @@ typedef struct {
 
 static int EPD_OFFSET = 0;
 
-class DisplayBase : public Task {
+class DisplayBase {
 private:
 
 protected:

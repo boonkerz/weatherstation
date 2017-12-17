@@ -34,7 +34,7 @@ void BME280::init() {
 			rslt = softReset();
 			if (rslt == BME280_OK) {
 				/* Read the calibration data */
-				//rslt = get_calib_data(dev);
+				rslt = _getCalibData();
 			}
 			break;
 		}
@@ -47,20 +47,7 @@ void BME280::init() {
 		ESP_LOGD(tag, ">> BME280Sensor not found");
 	}
 
-	start();
 
-}
-
-void BME280::run(void *data) {
-
-	while(true) {
-
-		ESP_LOGD(tag, ">> BME280Sensor refresh");
-
-		streamSensorDataNormalMode();
-		vTaskDelay(5000/portTICK_RATE_MS);
-
-	}
 }
 
 int8_t BME280::softReset()
@@ -79,7 +66,7 @@ int8_t BME280::streamSensorDataNormalMode()
 {
 	int8_t rslt;
 	uint8_t settings_sel;
-	struct bme280_data comp_data;
+
 
 	/* Recommended mode of operation: Indoor navigation */
 	settings.osr_h = BME280_OVERSAMPLING_1X;
@@ -93,19 +80,18 @@ int8_t BME280::streamSensorDataNormalMode()
 	settings_sel |= BME280_OSR_HUM_SEL;
 	settings_sel |= BME280_STANDBY_SEL;
 	settings_sel |= BME280_FILTER_SEL;
-	//rslt = _setSensorSettings(settings_sel);
-	//rslt = _setSensorMode(BME280_NORMAL_MODE);
+	rslt = _setSensorSettings(settings_sel);
+	rslt = _setSensorMode(BME280_NORMAL_MODE);
 
-	printf("Temperature, Pressure, Humidity %d\r\n", chipId);
-	rslt = _getSensorData(BME280_ALL, &comp_data);
-	printSensorData(&comp_data);
+	rslt = _getSensorData(BME280_ALL);
+	printSensorData();
 
 	return rslt;
 }
 
-void BME280::printSensorData(struct bme280_data *comp_data)
+void BME280::printSensorData()
 {
-	ESP_LOGD(tag, ">> BME280Sensor %0.2f, %0.2f, %0.2f\r\n",(double)comp_data->temperature, (double)comp_data->pressure, (double)comp_data->humidity);
+	ESP_LOGD(tag, ">> BME280Sensor %0.2f, %0.2f, %0.2f\r\n",comp_data.temperature, comp_data.pressure, comp_data.humidity);
 }
 
 int8_t BME280::_setSensorSettings(uint8_t desired_settings)
@@ -308,7 +294,7 @@ void BME280::_fillOsrTempSettings(uint8_t *reg_data)
 	*reg_data = BME280_SET_BITS(*reg_data, BME280_CTRL_TEMP, settings.osr_t);
 }
 
-int8_t BME280::_getSensorData(uint8_t sensor_comp, struct bme280_data *comp_data)
+int8_t BME280::_getSensorData(uint8_t sensor_comp)
 {
 	int8_t rslt;
 	/* Array to store the pressure, temperature and humidity data read from
@@ -318,16 +304,17 @@ int8_t BME280::_getSensorData(uint8_t sensor_comp, struct bme280_data *comp_data
 
 	/* Check for null pointer in the device structure*/
 
-	if ((comp_data != NULL)) {
+	if ((&comp_data != NULL)) {
 		/* Read the pressure and temperature data from the sensor */
 		rslt = _getRegs(BME280_DATA_ADDR, reg_data, BME280_P_T_H_DATA_LEN);
-		printf("READ %d\r\n", reg_data[1]);
+
+
 		if (rslt == BME280_OK) {
 			/* Parse the read data from the sensor */
 			_parseSensorData(reg_data, &uncomp_data);
 			/* Compensate the pressure and/or temperature and/or
 			   humidity data from the sensor */
-			rslt = _compensateData(sensor_comp, &uncomp_data, comp_data);
+			rslt = _compensateData(sensor_comp, &uncomp_data);
 		}
 
 		rslt = BME280_OK;
@@ -339,28 +326,27 @@ int8_t BME280::_getSensorData(uint8_t sensor_comp, struct bme280_data *comp_data
 	return rslt;
 }
 
-int8_t BME280::_compensateData(uint8_t sensor_comp, const struct bme280_uncomp_data *uncomp_data,
-				     struct bme280_data *comp_data)
+int8_t BME280::_compensateData(uint8_t sensor_comp, const struct bme280_uncomp_data *uncomp_data)
 {
 	int8_t rslt = BME280_OK;
 
-	if ((uncomp_data != NULL) && (comp_data != NULL)) {
+	if ((uncomp_data != NULL) && (&comp_data != NULL)) {
 		/* Initialize to zero */
-		comp_data->temperature = 0;
-		comp_data->pressure = 0;
-		comp_data->humidity = 0;
+		comp_data.temperature = 0;
+		comp_data.pressure = 0;
+		comp_data.humidity = 0;
 		/* If pressure or temperature component is selected */
 		if (sensor_comp & (BME280_PRESS | BME280_TEMP | BME280_HUM)) {
 			/* Compensate the temperature data */
-			comp_data->temperature = _compensateTemperature(uncomp_data);
+			comp_data.temperature = _compensateTemperature(uncomp_data);
 		}
 		if (sensor_comp & BME280_PRESS) {
 			/* Compensate the pressure data */
-			comp_data->pressure = _compensatePressure(uncomp_data);
+			comp_data.pressure = _compensatePressure(uncomp_data);
 		}
 		if (sensor_comp & BME280_HUM) {
 			/* Compensate the humidity data */
-			comp_data->humidity = _compensateHumidity(uncomp_data);
+			comp_data.humidity = _compensateHumidity(uncomp_data);
 		}
 	} else {
 		rslt = BME280_E_NULL_PTR;
@@ -411,11 +397,8 @@ int8_t BME280::_getRegs(uint8_t reg_addr, uint8_t *reg_data, uint16_t len)
 	int8_t rslt;
 
 	i2cBus.setAddress(BME280_I2C_ADDR_SEC);
-	i2cBus.beginTransaction();
-	i2cBus.write(reg_addr, true);
-	i2cBus.start();
-	i2cBus.read(reg_data, len, false);
-	i2cBus.endTransaction();
+
+	i2cBus.read(reg_addr, reg_data, len);
 
 	rslt = BME280_OK;
 
@@ -446,6 +429,7 @@ int8_t BME280::_setRegs(uint8_t *reg_addr, const uint8_t *reg_data, uint8_t len)
 			} else {
 				temp_len = len;
 			}
+
 
 			i2cBus.setAddress(BME280_I2C_ADDR_SEC);
 			i2cBus.beginTransaction();

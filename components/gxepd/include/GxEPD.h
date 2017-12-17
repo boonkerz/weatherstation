@@ -60,9 +60,11 @@ protected:
 	void  _drawPixel(int x, int y, uint8_t val) override;
 public:
 	void init();
-	void run(void *data);
+	void clean();
 	void update();
 	void fillScreen(uint16_t color);
+	int getWidth();
+	int getHeight();
 };
 
 #endif /* COMPONENTS_GxEPD_INCLUDE_GxEPD_H_ */
