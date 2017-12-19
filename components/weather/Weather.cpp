@@ -13,7 +13,7 @@ static char tag[] = "WatherThread";
 void Weather::init() {
 	bme280Sensor.init();
 	epd.init();
-
+	api.init();
 	start();
 }
 
@@ -23,6 +23,7 @@ void Weather::run(void *data) {
 		ESP_LOGD(tag, ">> refresh");
 
 		bme280Sensor.streamSensorDataNormalMode();
+		api.refresh();
 
 		display();
 

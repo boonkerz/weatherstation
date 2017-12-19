@@ -11,6 +11,7 @@
 #include "sdkconfig.h"
 #include "Task.h"
 #include "BME280.h"
+#include "OpenWeatherApi.h"
 #include "GxEPD.h"
 
 #ifndef COMPONENTS_WEATHER_INCLUDE_WEATHER_H_
@@ -21,6 +22,7 @@ class Weather : public Task {
 private:
 	BME280 bme280Sensor;
 	GxEPD epd;
+	OpenWeatherApi api;
 	void displayBase();
 	void display();
 public:

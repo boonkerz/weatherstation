@@ -9,7 +9,7 @@
 static char tag[]="WeatherStation";
 
 Weather weatherObj;
-
+BootWiFi bootWiFi;
 
 extern "C" {
 	void app_main(void);
@@ -17,7 +17,7 @@ extern "C" {
 
 void app_main(void)
 {
-	BootWiFi bootWiFi;
+
 	bootWiFi.boot();
 	weatherObj.init();
 
