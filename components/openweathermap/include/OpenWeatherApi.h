@@ -11,11 +11,14 @@
 #include <string.h>
 #include "sdkconfig.h"
 #include "RESTClient.h"
+#include "JSON.h"
 
 class OpenWeatherApi {
 private:
 	RESTClient client;
+
 public:
+	JsonObject apiObj = JSON::createObject();
 	void init();
 	void refresh();
 

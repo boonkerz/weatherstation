@@ -25,6 +25,9 @@ private:
 	OpenWeatherApi api;
 	void displayBase();
 	void display();
+	void displayLocal();
+	void displayApi();
+	std::string timeStampToHReadble(long  timestamp);
 public:
 	void init();
 	void run(void *data);

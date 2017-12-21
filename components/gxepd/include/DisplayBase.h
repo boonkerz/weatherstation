@@ -8,6 +8,9 @@
 #include "sdkconfig.h"
 #include "I2C.h"
 #include "SPI.h"
+#include <sys/stat.h>
+#include "rom/tjpgd.h"
+#include <errno.h>
 
 /**************************************************************/
 
@@ -135,6 +138,17 @@ typedef struct {
       uint16_t dataPtr;
 } propFont;
 
+// User defined device identifier
+typedef struct {
+	FILE		*fhndl;			// File handler for input function
+    int			x;				// image top left point X position
+    int			y;				// image top left point Y position
+    uint8_t		*membuff;		// memory buffer containing the image
+    uint32_t	bufsize;		// size of the memory buffer
+    uint32_t	bufptr;			// memory buffer current position
+} JPGIODEV;
+
+
 static int EPD_OFFSET = 0;
 
 class DisplayBase {
@@ -196,6 +210,7 @@ public:
 	void drawFastHLine(int16_t x, int16_t y, int16_t w, color_t color);
 	void drawFastVLine(int16_t x, int16_t y, int16_t h, color_t color);
 	void drawText(char *st, int x, int y);
+	int drawImageJpg(int x, int y, uint8_t scale, char *fname, uint8_t *buf, int size);
 	void setFont(uint8_t font, const char *font_file);
 	int getFontHeight();
 };

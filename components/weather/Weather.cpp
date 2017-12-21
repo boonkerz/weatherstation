@@ -10,6 +10,7 @@
 
 static char tag[] = "WatherThread";
 
+
 void Weather::init() {
 	bme280Sensor.init();
 	epd.init();
@@ -27,7 +28,7 @@ void Weather::run(void *data) {
 
 		display();
 
-		vTaskDelay(10000/portTICK_RATE_MS);
+		vTaskDelay(100000/portTICK_RATE_MS);
 	}
 }
 
@@ -35,7 +36,8 @@ void Weather::run(void *data) {
 
 void Weather::display() {
 	displayBase();
-
+	displayLocal();
+	displayApi();
 	epd.update();
 }
 
@@ -46,6 +48,10 @@ void Weather::displayBase() {
 	epd.setFont(6, NULL);
 	epd.drawText((char *)"Wetter Station", 0, 0);
 
+	epd.drawFastHLine(0, 120, epd.getWidth(), EPD_BLACK);
+}
+
+void Weather::displayLocal() {
 	epd.setFont(2, NULL);
 
 	char buffer [50];
@@ -60,6 +66,45 @@ void Weather::displayBase() {
 	sprintf(buffer, "Luftdruck: %0.2f hPa", bme280Sensor.comp_data.pressure/100);
 
 	epd.drawText(buffer, 0, 90);
+}
 
-	epd.drawFastHLine(0, 120, epd.getWidth(), EPD_BLACK);
+void Weather::displayApi() {
+
+	JsonArray arr = api.apiObj.getArray("list");
+	epd.setFont(1, NULL);
+	char buffer [50];
+
+	int y = 0;
+	for(int i = 4; i < arr.size(); i+=8) {
+		epd.setFont(UBUNTU16_FONT, NULL);
+		sprintf(buffer, "%s", timeStampToHReadble(arr.getObject(i).getInt("dt")).c_str());
+		epd.drawText(buffer, 30 +(y*120), 140);
+
+		sprintf(buffer, "%0.2f C", arr.getObject(i).getObject("main").getDouble("temp"));
+		epd.drawText(buffer, 40 +(y*120), 160);
+
+		epd.drawImageJpg(CENTER, CENTER, 0, SPIFFS_BASE_PATH"/images/evolution-of-human.jpg", NULL, 0);
+
+		if(y < 4) {
+			epd.drawFastVLine(135+(y*120), 140, 200, EPD_BLACK);
+		}
+		y++;
+	}
+}
+
+std::string Weather::timeStampToHReadble(long  timestamp)
+{
+    const time_t rawtime = (const time_t)timestamp;
+
+    struct tm * dt;
+    char timestr[30];
+    char buffer [30];
+
+    dt = localtime(&rawtime);
+    // use any strftime format spec here
+    strftime(timestr, sizeof(timestr), "%d.%m.%Y", dt);
+    sprintf(buffer,"%s", timestr);
+    std::string stdBuffer(buffer);
+    ESP_LOGD(tag, ">> date %s", stdBuffer.c_str());
+    return stdBuffer;
 }

@@ -2,7 +2,7 @@
 
 static const char* tag = "RestClient";
 
-bool RESTClient::getJson(string web_server, string request) {
+string RESTClient::getJson(string web_server, string request) {
 
 	const struct addrinfo hints = {
 		.ai_flags = 0,
@@ -14,6 +14,8 @@ bool RESTClient::getJson(string web_server, string request) {
 	struct in_addr *addr;
 	int s, r;
 	char recv_buf[64];
+
+	string response = "";
 
 	ESP_LOGD(tag, "Connected to AP");
 
@@ -66,16 +68,24 @@ bool RESTClient::getJson(string web_server, string request) {
 	ESP_LOGI(tag, "... set socket receiving timeout success");
 
 	/* Read HTTP response */
+	bool body = false;
 	do {
 		bzero(recv_buf, sizeof(recv_buf));
 		r = read(s, recv_buf, sizeof(recv_buf)-1);
-		for(int i = 0; i < r; i++) {
-			putchar(recv_buf[i]);
+		if(body) {
+			response = response.append(recv_buf);
+		}else{
+			char jsonB = '{';
+			for(int i = 0; i < r; i++) {
+				if(recv_buf[i] == jsonB || body) {
+					body = true;
+					response.push_back(recv_buf[i]);
+				}
+			}
 		}
 	} while(r > 0);
 
-	ESP_LOGI(tag, "... done reading from socket. Last read return=%d errno=%d\r\n", r, errno);
 	close(s);
 
-	return true;
+	return response;
 }

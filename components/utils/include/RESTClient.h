@@ -10,7 +10,6 @@
 #include <stdio.h>
 #include <string.h>
 #include <string>
-
 #include "lwip/err.h"
 #include "lwip/sockets.h"
 #include "lwip/sys.h"
@@ -19,7 +18,6 @@
 using namespace std;
 
 class RESTClient {
-private:
 public:
-	bool getJson(string web_server, string request);
+	string getJson(string web_server, string request);
 };
