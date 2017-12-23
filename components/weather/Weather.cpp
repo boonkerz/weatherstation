@@ -12,6 +12,7 @@ static char tag[] = "WatherThread";
 
 
 void Weather::init() {
+	vfs.init();
 	bme280Sensor.init();
 	epd.init();
 	api.init();
@@ -83,7 +84,20 @@ void Weather::displayApi() {
 		sprintf(buffer, "%0.2f C", arr.getObject(i).getObject("main").getDouble("temp"));
 		epd.drawText(buffer, 40 +(y*120), 160);
 
-		epd.drawImageJpg(CENTER, CENTER, 0, SPIFFS_BASE_PATH"/images/evolution-of-human.jpg", NULL, 0);
+		//epd.drawImageJpg(CENTER, CENTER, 0, SPIFFS_BASE_PATH"/images/evolution-of-human.jpg", NULL, 0);
+		if(vfs.fileExists("10n.jpg")) {
+				    ESP_LOGD(tag, ">> File Exists");
+				}else{
+
+				    ESP_LOGD(tag, ">> File Not Exists");
+				}
+
+		if(vfs.fileExists("images/10n_m.jpg")) {
+		    ESP_LOGD(tag, ">> File Exists");
+		}else{
+
+		    ESP_LOGD(tag, ">> File Not Exists");
+		}
 
 		if(y < 4) {
 			epd.drawFastVLine(135+(y*120), 140, 200, EPD_BLACK);

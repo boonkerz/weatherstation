@@ -8,6 +8,8 @@
 #include <freertos/FreeRTOS.h>
 #include <freertos/task.h>
 #include <stdio.h>
+
+#include "FileSystem.h"
 #include "sdkconfig.h"
 #include "Task.h"
 #include "BME280.h"
@@ -22,6 +24,7 @@ class Weather : public Task {
 private:
 	BME280 bme280Sensor;
 	GxEPD epd;
+	FileSystem vfs;
 	OpenWeatherApi api;
 	void displayBase();
 	void display();

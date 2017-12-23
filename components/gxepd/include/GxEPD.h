@@ -47,8 +47,6 @@ class GxEPD : public DisplayBase {
 private:
 	SPI io;
 	uint8_t drawBuff[GxGDEW075T8_BUFFER_SIZE];
-	int _width = GxGDEW075T8_WIDTH;
-	int _height = GxGDEW075T8_HEIGHT;
 	void _send8pixel(uint8_t data);
 	void _waitBusy();
 	void _wakeUp();

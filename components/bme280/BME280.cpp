@@ -58,7 +58,7 @@ int8_t BME280::softReset()
 	uint8_t soft_rst_cmd = 0xB6;
 
 	rslt = _setRegs(&reg_addr, &soft_rst_cmd, 1);
-
+	vTaskDelay(1000/portTICK_RATE_MS);
 	return rslt;
 }
 

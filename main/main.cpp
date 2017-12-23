@@ -6,6 +6,7 @@
 #include "I2C.h"
 #include "BootWiFi.h"
 
+
 static char tag[]="WeatherStation";
 
 Weather weatherObj;

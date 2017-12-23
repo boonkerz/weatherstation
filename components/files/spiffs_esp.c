@@ -1,12 +1,12 @@
 /*
- * Lua RTOS, mutex api implementation over FreeRTOS
+ * Lua RTOS, SPIFFS low access
  *
  * Copyright (C) 2015 - 2017
  * IBEROXARXA SERVICIOS INTEGRALES, S.L. & CSS IBÉRICA, S.L.
- * 
+ *
  * Author: Jaume Olivé (jolive@iberoxarxa.com / jolive@whitecatboard.org)
- * 
- * All rights reserved.  
+ *
+ * All rights reserved.
  *
  * Permission to use, copy, modify, and distribute this software
  * and its documentation for any purpose and without fee is hereby
@@ -25,29 +25,14 @@
  * in an action of contract, negligence or other tortious action,
  * arising out of or in connection with the use or performance of
  * this software.
- *
- * Modified by: LoBo (loboris@gmail.com / https://github.com/loboris)
- *
  */
 
-#ifndef MUTEX_H_H
-#define	MUTEX_H_H
+#include <stdlib.h>
 
-#include "freertos/FreeRTOS.h"
-#include "freertos/semphr.h"
+#include "esp_spiffs.h"
+#include "esp_attr.h"
 
-#define MUTEX_INITIALIZER {.sem = 0}
+#include "spiffs.h"
 
-struct mtx {
-    SemaphoreHandle_t sem;
-};
-
-
-void mtx_init(struct mtx *mutex, const char *name, const char *type, int opts);
-void mtx_lock(struct mtx *mutex);
-int  mtx_trylock(struct	mtx *mutex);
-void mtx_unlock(struct mtx *mutex);
-void mtx_destroy(struct	mtx *mutex);
-
-#endif	/* MUTEX_H_H */
+#include <esp_spi_flash.h>
 

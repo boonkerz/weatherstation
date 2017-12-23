@@ -19,6 +19,9 @@ void GxEPD::init() {
 	  .y2 = GxGDEW075T8_HEIGHT-1,
 	};
 
+	_width = GxGDEW075T8_WIDTH;
+	_height = GxGDEW075T8_HEIGHT;
+
 	ESP_LOGD(tag, ">> GxEPD");
 	ESP_LOGD(tag, ">> GxEPD %i", GxGDEW075T8_BUFFER_SIZE);
 

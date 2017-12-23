@@ -12,6 +12,7 @@
 #include "rom/tjpgd.h"
 #include <errno.h>
 
+
 /**************************************************************/
 
 #define DEG_TO_RAD 0.01745329252
@@ -168,7 +169,8 @@ protected:
 	color_t   _bg = EPD_WHITE;            	// current background for non transparent fonts
 	dispWin_t dispWin;			// display clip window
 	float	  _angleOffset;		// angle offset for arc, polygon and line by angle functions
-
+	int _width = 0;
+	int _height = 0;
 	Font_t cfont;					// Current font structure
 	uint8_t image_debug;
 	propFont fontChar;
@@ -210,7 +212,7 @@ public:
 	void drawFastHLine(int16_t x, int16_t y, int16_t w, color_t color);
 	void drawFastVLine(int16_t x, int16_t y, int16_t h, color_t color);
 	void drawText(char *st, int x, int y);
-	int drawImageJpg(int x, int y, uint8_t scale, char *fname, uint8_t *buf, int size);
+	void drawImageJpg(int x, int y, uint8_t scale, char *fname, uint8_t *buf, int size);
 	void setFont(uint8_t font, const char *font_file);
 	int getFontHeight();
 };
