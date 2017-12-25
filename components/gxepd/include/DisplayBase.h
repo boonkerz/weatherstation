@@ -11,6 +11,9 @@
 #include <sys/stat.h>
 #include "rom/tjpgd.h"
 #include <errno.h>
+#include <string>
+
+using namespace std;
 
 
 /**************************************************************/
@@ -149,6 +152,14 @@ typedef struct {
     uint32_t	bufptr;			// memory buffer current position
 } JPGIODEV;
 
+typedef struct {
+    const unsigned char *inData;
+    int inPos;
+    unsigned char *outData;
+    int outW;
+    int outH;
+} JpegDev;
+
 
 static int EPD_OFFSET = 0;
 
@@ -212,7 +223,7 @@ public:
 	void drawFastHLine(int16_t x, int16_t y, int16_t w, color_t color);
 	void drawFastVLine(int16_t x, int16_t y, int16_t h, color_t color);
 	void drawText(char *st, int x, int y);
-	void drawImageJpg(int x, int y, uint8_t scale, char *fname, uint8_t *buf, int size);
+	void drawImageJpg(int x, int y, uint8_t scale, uint8_t *buf, int size);
 	void setFont(uint8_t font, const char *font_file);
 	int getFontHeight();
 };

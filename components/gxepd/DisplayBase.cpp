@@ -721,9 +721,96 @@ void DisplayBase::_getMaxWidthHeight()
     cfont.size = tempPtr;
 }
 
-void DisplayBase::drawImageJpg(int x, int y, uint8_t scale, char *fname, uint8_t *buf, int size)
+static UINT infunc(JDEC *decoder, BYTE *buf, UINT len)
 {
-
-
-
+    JpegDev *jd = (JpegDev *)decoder->device;
+    printf("Reading %d bytes from pos %d\n", len, jd->inPos);
+    if (buf != NULL) {
+        memcpy(buf, jd->inData + jd->inPos, len);
+    }
+    jd->inPos += len;
+    return len;
 }
+
+
+static UINT outfunc(JDEC *decoder, void *bitmap, JRECT *rect)
+{
+    unsigned char *in = (unsigned char *)bitmap;
+    unsigned char *out;
+    int y;
+    printf("Rect %d,%d - %d,%d\n", rect->top, rect->left, rect->bottom, rect->right);
+    JpegDev *jd = (JpegDev *)decoder->device;
+    for (y = rect->top; y <= rect->bottom; y++) {
+        out = jd->outData + ((jd->outW * y) + rect->left) * 3;
+        memcpy(out, in, ((rect->right - rect->left) + 1) * 3);
+        in += ((rect->right - rect->left) + 1) * 3;
+    }
+    return 1;
+}
+
+
+void DisplayBase::drawImageJpg(int x, int y, uint8_t scale, uint8_t *buf, int size)
+{
+	char aapix[] = " .:;+=xX$$";
+	unsigned char *decoded, *p;
+	char *work;
+	int r, v;
+	JDEC decoder;
+	JpegDev jd;
+	decoded = (unsigned char*)malloc(y * y * 3);
+	for (x = 0; x < x * y * 3; x += 2) {
+		decoded[x] = 0; decoded[x + 1] = 0xff;
+	}
+	work = (char*)malloc(3800);
+	memset(work, 0, 3800);
+
+	jd.inData = buf;
+	jd.inPos = 0;
+	jd.outData = decoded;
+	jd.outW = 100;
+	jd.outH = 100;
+
+	r = jd_prepare(&decoder, infunc, work, size, (void *)&jd);
+	if(r == JDR_OK) {
+		printf("JDR OK");
+		r = jd_decomp(&decoder, outfunc, 0);
+	}else{
+		printf("JDR NOT OK %d", r);
+	}
+
+	float gs_clr = 0;
+	uint8_t rgb_color[3];
+	uint8_t last_lvl, i;
+	uint8_t pix;
+
+	/*p = decoded + 2;
+	for (y = 100; y <= 200; y++) {
+		for (x = 100; x <= 200; x++) {
+			// Clip to display area
+			if ((x >= 20) && (y >= 20) && (x <= 120) && (y <= 120)) {
+				// Directly convert color to 4-bit gray scale
+				pix = 0;
+				pix |= ((*p++) >> 4) & 0x08;
+				pix |= ((*p++) >> 5) & 0x06;
+				pix |= ((*p++) >> 7);
+				pix ^= 0x0F;
+
+				gs_disp_buffer[(y * _width) + x] = pix;
+				gs_used_shades |= (1 << pix);
+			}
+			else p += 3; // skip
+		}
+	}*/
+	/*for (y = 0; y < TESTH; y++) {
+		for (x = 0; x < TESTH; x++) {
+			v = ((*p) * (sizeof(aapix) - 2) * 2) / 256;
+			printf("%c%c", aapix[v / 2], aapix[(v + 1) / 2]);
+			p += 3;
+		}
+		printf("%c%c", ' ', '\n');
+	}*/
+
+	free(work);
+	free(decoded);
+}
+

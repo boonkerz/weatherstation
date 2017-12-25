@@ -6,13 +6,26 @@
  */
 
 #include "include/Weather.h"
-
+#include "spiffs_vfs.h"
 
 static char tag[] = "WatherThread";
 
 
 void Weather::init() {
-	vfs.init();
+
+	vfs_spiffs_register();
+
+	// the partition was mounted?
+	if(spiffs_is_mounted) {
+		printf("Partition correctly mounted!\r\n");
+		vfs.init();
+	}
+
+	else {
+		printf("Error while mounting the SPIFFS partition");
+		while(1) vTaskDelay(1000 / portTICK_RATE_MS);
+	}
+
 	bme280Sensor.init();
 	epd.init();
 	api.init();
@@ -29,7 +42,7 @@ void Weather::run(void *data) {
 
 		display();
 
-		vTaskDelay(100000/portTICK_RATE_MS);
+		vTaskDelay(20000/portTICK_RATE_MS);
 	}
 }
 
@@ -75,6 +88,9 @@ void Weather::displayApi() {
 	epd.setFont(1, NULL);
 	char buffer [50];
 
+
+	vfs.ls(SPIFFS_BASE_PATH"/images");
+
 	int y = 0;
 	for(int i = 4; i < arr.size(); i+=8) {
 		epd.setFont(UBUNTU16_FONT, NULL);
@@ -84,8 +100,12 @@ void Weather::displayApi() {
 		sprintf(buffer, "%0.2f C", arr.getObject(i).getObject("main").getDouble("temp"));
 		epd.drawText(buffer, 40 +(y*120), 160);
 
-		//epd.drawImageJpg(CENTER, CENTER, 0, SPIFFS_BASE_PATH"/images/evolution-of-human.jpg", NULL, 0);
-		if(vfs.fileExists("10n.jpg")) {
+		uint8_t buf[3800];
+		int length = 0;
+
+		vfs.read(SPIFFS_BASE_PATH"/images/logo.jpg", buf, length);
+		epd.drawImageJpg(100, 100, 0, buf, length);
+		/*if(vfs.fileExists("10n.jpg")) {
 				    ESP_LOGD(tag, ">> File Exists");
 				}else{
 
@@ -98,7 +118,7 @@ void Weather::displayApi() {
 
 		    ESP_LOGD(tag, ">> File Not Exists");
 		}
-
+*/
 		if(y < 4) {
 			epd.drawFastVLine(135+(y*120), 140, 200, EPD_BLACK);
 		}

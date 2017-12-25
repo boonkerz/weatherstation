@@ -21,7 +21,7 @@ void BME280::init() {
 
 	int8_t rslt;
 	/* chip id read try count */
-	uint8_t try_count = 5;
+	uint8_t try_count = 1;
 	uint8_t chip_id = 0;
 
 	while (try_count) {
@@ -32,6 +32,7 @@ void BME280::init() {
 			chipId = chip_id;
 			/* Reset the sensor */
 			rslt = softReset();
+			vTaskDelay(1000/portTICK_RATE_MS);
 			if (rslt == BME280_OK) {
 				/* Read the calibration data */
 				rslt = _getCalibData();
@@ -39,7 +40,7 @@ void BME280::init() {
 			break;
 		}
 		/* Wait for 1 ms */
-		vTaskDelay(1/portTICK_RATE_MS);
+		vTaskDelay(2000/portTICK_RATE_MS);
 		--try_count;
 	}
 	/* Chip id check failed */
@@ -82,6 +83,7 @@ int8_t BME280::streamSensorDataNormalMode()
 	settings_sel |= BME280_FILTER_SEL;
 	rslt = _setSensorSettings(settings_sel);
 	rslt = _setSensorMode(BME280_NORMAL_MODE);
+
 
 	rslt = _getSensorData(BME280_ALL);
 	printSensorData();
